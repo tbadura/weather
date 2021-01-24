@@ -1,5 +1,8 @@
 package com.example.weather.model;
 
+/**
+ * Jackson-JSON deserialized root weather object
+ */
 public class Weather {
     private Location location;
     private Current current;
