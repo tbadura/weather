@@ -21,14 +21,14 @@
                     <span style='font-size: x-large;'>${current.condition.text}</span>
                 </div>
                 <pre>
-            Temperature: ${current.temp_f} F
-            Feels like: ${current.feelslike_f} F
-            Wind: ${current.wind_mph} mph ${current.wind_dir}
-            Humidity: ${current.humidity}%
-            Pressure (inches): ${current.pressure_in}
-            Precipitation (inches): ${current.precip_in}
+        Temperature: ${current.temp_f} F
+        Feels like: ${current.feelslike_f} F
+        Wind: ${current.wind_mph} mph ${current.wind_dir}
+        Humidity: ${current.humidity}%
+        Pressure (inches): ${current.pressure_in}
+        Precipitation (inches): ${current.precip_in}
 
-            Last updated at ${lastUpdatedTime}
+        Last updated at ${lastUpdatedTime}
                 </pre>
             </c:when>
             <c:otherwise>
@@ -36,7 +36,7 @@
             </c:otherwise>
         </c:choose>
         <hr/>
-            Powered by <a href="https://www.weatherapi.com/" title="Weather API">WeatherAPI.com</a>
+        Powered by <a href="https://www.weatherapi.com/" title="Weather API">WeatherAPI.com</a>
     </div>
 </body>
 </html>
