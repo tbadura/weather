@@ -78,7 +78,7 @@ public class WeatherServiceImpl implements WeatherService {
     private String getPublicIP() throws IOException {
         // Find public IP address
 
-        URL url_name = new URL("http://bot.whatismyipaddress.com");
+        URL url_name = new URL("https://api.ipify.org");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(url_name.openStream()));
 

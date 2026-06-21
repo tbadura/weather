@@ -24,6 +24,10 @@ public class Current{
     private double uv;
     private double gust_mph;
     private double gust_kph;
+    public int will_it_rain;
+    public int chance_of_rain;
+    public int will_it_snow;
+    public int chance_of_snow;
 
     public int getLast_updated_epoch() {
         return last_updated_epoch;
@@ -209,6 +213,37 @@ public class Current{
         this.gust_kph = gust_kph;
     }
 
+    public int getWill_it_rain() {
+        return will_it_rain;
+    }
+
+    public void setWill_it_rain(int will_it_rain) {
+        this.will_it_rain = will_it_rain;
+    }
+
+    public int getChance_of_rain() {
+        return chance_of_rain;
+    }
+
+    public void setChance_of_rain(int chance_of_rain) {
+        this.chance_of_rain = chance_of_rain;
+    }
+
+    public int getWill_it_snow() {
+        return will_it_snow;
+    }
+
+    public void setWill_it_snow(int will_it_snow) {
+        this.will_it_snow = will_it_snow;
+    }
+
+    public int getChance_of_snow() {
+        return chance_of_snow;
+    }
+
+    public void setChance_of_snow(int chance_of_snow) {
+        this.chance_of_snow = chance_of_snow;
+    }
 
     @Override
     public String toString() {
@@ -236,6 +271,10 @@ public class Current{
                 ", uv=" + uv +
                 ", gust_mph=" + gust_mph +
                 ", gust_kph=" + gust_kph +
+                ", will_it_rain=" + will_it_rain +
+                ", chance_of_rain=" + chance_of_rain +
+                ", will_it_snow=" + will_it_snow +
+                ", chance_of_snow=" + chance_of_snow +
                 '}';
     }
 }
