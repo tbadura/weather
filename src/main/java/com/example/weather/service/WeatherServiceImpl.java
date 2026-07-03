@@ -7,14 +7,9 @@ import com.cedarsoftware.util.io.JsonWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import java.net.URI;
 import java.net.http.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-
 
 /**
  * Weather API implementation of weather service
@@ -22,7 +17,7 @@ import java.net.URL;
 @Service
 public class WeatherServiceImpl implements WeatherService {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String API_KEY = ""; // key not provided, get one at weatherapi.com
     private static final int STATUS_OK = 200;
 
@@ -33,15 +28,18 @@ public class WeatherServiceImpl implements WeatherService {
      * @throws RuntimeException if weather service returns error
      */
     @Override
-    public Weather getWeather() {
-
+    public Weather getWeather(String clientIp) {
         Weather weather = null;
-
         try {
+            // --- SAFETY CHECK FOR LOCAL DEVELOPMENT ---
+            // If the application is running locally, 127.0.0.1 cannot be geolocated.
+            // "auto:ip" tells Weather API to detect your local network's real public IP.
+            if ("127.0.0.1".equals(clientIp) || "0:0:0:0:0:0:0:1".equals(clientIp)) {
+                clientIp = "auto:ip";
+            }
+            // ------------------------------------------
 
-            String endpoint = String.format("http://api.weatherapi.com/v1/current.json?key=%s&q=%s",
-                    API_KEY, getPublicIP());
-
+            String endpoint = String.format("http://api.weatherapi.com/v1/current.json?key=%s&q=%s", API_KEY, clientIp);
             logger.debug("*** Calling Weather API web service: " + endpoint);
 
             HttpClient client = HttpClient.newHttpClient();
@@ -66,25 +64,10 @@ public class WeatherServiceImpl implements WeatherService {
             ObjectMapper om = new ObjectMapper();
             weather = om.readValue(jsonText, Weather.class);
 
-
         } catch (IOException | InterruptedException e) {
             logger.error("Error connecting to weather service: ", e);
+            Thread.currentThread().interrupt(); // Restore interrupted status for InterruptedException
         }
-
         return weather;
-
     }
-
-    private String getPublicIP() throws IOException {
-        // Find public IP address
-
-        URL url_name = new URL("https://api.ipify.org");
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(url_name.openStream()));
-
-        return br.readLine().trim();
-
-    }
-
-
 }

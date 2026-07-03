@@ -13,7 +13,7 @@ public interface WeatherService {
      *
      * @return Weather object or <code>null</code> if connection error
      */
-    Weather getWeather();
 
+    Weather getWeather(String clientIp);
 }
 

@@ -3,6 +3,7 @@ package com.example.weather.controller;
 import com.example.weather.model.Current;
 import com.example.weather.model.Weather;
 import com.example.weather.service.WeatherService;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,7 @@ import java.util.Locale;
 public class WeatherController {
 
     private static final Logger logger = LoggerFactory.getLogger(WeatherController.class);
-
-    private WeatherService weatherService;
+    private final WeatherService weatherService;
 
     @Autowired
     public WeatherController(WeatherService weatherService) {
@@ -33,25 +33,32 @@ public class WeatherController {
      * Simply selects the home view to render by returning its name.
      */
     @RequestMapping("/weather")
-    public String home(Locale locale, Model model) {
+    public String home(Locale locale, Model model, HttpServletRequest request) {
         logger.info("Entering HomeController class. The client locale is {}.", locale);
 
-        Weather weather = weatherService.getWeather();
+        // Extract the client's actual public IP
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null || clientIp.isEmpty()) {
+            clientIp = request.getRemoteAddr();
+        } else {
+            // X-Forwarded-For can be a comma-separated list; the first one is the client
+            clientIp = clientIp.split(",")[0].trim();
+        }
+
+        // Pass the clientIp string to the weather service
+        Weather weather = weatherService.getWeather(clientIp);
+
         if (weather != null) {
             Current currentConditions = weather.getCurrent();
-
             model.addAttribute("location", weather.getLocation());
             model.addAttribute("current", currentConditions);
 
-            LocalDateTime localDateTime =
-                    LocalDateTime.ofEpochSecond(currentConditions.getLast_updated_epoch(), 0, OffsetDateTime.now().getOffset());
-
+            LocalDateTime localDateTime = LocalDateTime.ofEpochSecond(
+                    currentConditions.getLast_updated_epoch(), 0, OffsetDateTime.now().getOffset()
+            );
             DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("h:mm a");
             model.addAttribute("lastUpdatedTime", FORMATTER.format(localDateTime));
         }
-
         return "weather";
     }
-
-
 }
