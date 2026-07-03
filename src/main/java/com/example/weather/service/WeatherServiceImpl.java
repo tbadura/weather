@@ -7,6 +7,7 @@ import com.cedarsoftware.util.io.JsonWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import java.net.URI;
 import java.net.http.*;
 import java.io.IOException;
@@ -31,11 +32,11 @@ public class WeatherServiceImpl implements WeatherService {
     public Weather getWeather(String clientIp) {
         Weather weather = null;
         try {
-            // --- SAFETY CHECK FOR LOCAL DEVELOPMENT ---
-            // If the application is running locally, 127.0.0.1 cannot be geolocated.
-            // "auto:ip" tells Weather API to detect your local network's real public IP.
-            if ("127.0.0.1".equals(clientIp) || "0:0:0:0:0:0:0:1".equals(clientIp)) {
-                clientIp = "auto:ip";
+            // --- ROBUST SAFETY CHECK FOR LOCAL / LAN DEVELOPMENT ---
+            // If the application receives a local network IP, look up your router's actual public IP
+            if (isLocalOrPrivateIp(clientIp)) {
+                logger.info("Local/Private IP detected [{}]. Resolving public outbound IP...", clientIp);
+                clientIp = fetchPublicIp();
             }
             // ------------------------------------------
 
@@ -66,8 +67,44 @@ public class WeatherServiceImpl implements WeatherService {
 
         } catch (IOException | InterruptedException e) {
             logger.error("Error connecting to weather service: ", e);
-            Thread.currentThread().interrupt(); // Restore interrupted status for InterruptedException
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt(); // Restore interrupted status safely
+            }
         }
         return weather;
+    }
+
+    /**
+     * Checks if an IP string is loopback (127.0.0.1, ::1) or private LAN range (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+     */
+    private boolean isLocalOrPrivateIp(String ip) {
+        if (ip == null || ip.isBlank()) {
+            return true;
+        }
+        String cleanIp = ip.trim();
+        return cleanIp.equals("127.0.0.1") ||
+                cleanIp.equals("0:0:0:0:0:0:0:1") ||
+                cleanIp.startsWith("192.168.") ||
+                cleanIp.startsWith("10.") ||
+                cleanIp.matches("^172\\.(1[6-9]|2[0-9]|3[0-1])\\..*");
+    }
+
+    /**
+     * Synchronously fetches the public WAN IP of your local testing environment
+     */
+    private String fetchPublicIp() {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.ipify.org"))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return response.body().trim();
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to automatically discover public IP, falling back to 'auto:ip'", e);
+        }
+        return "auto:ip"; // Safe fallback that lets Weather API detect your local network's real public IP
     }
 }
