@@ -26,22 +26,20 @@ public class WeatherServiceImpl implements WeatherService {
      * Get the weather current conditions
      *
      * @return Weather object or <code>null</code> if connection error
-     * @throws RuntimeException if weather service returns error
+     * @throws RuntimeException if weather service returns error in JSON response body
      */
     @Override
     public Weather getWeather(String clientIp) {
         Weather weather = null;
         try {
-            // --- ROBUST SAFETY CHECK FOR LOCAL / LAN DEVELOPMENT ---
             // If the application receives a local network IP, look up your router's actual public IP
             if (isLocalOrPrivateIp(clientIp)) {
                 logger.info("Local/Private IP detected [{}]. Resolving public outbound IP...", clientIp);
                 clientIp = fetchPublicIp();
             }
-            // ------------------------------------------
 
-            String endpoint = String.format("http://api.weatherapi.com/v1/current.json?key=%s&q=%s", API_KEY, clientIp);
-            logger.debug("*** Calling Weather API web service: " + endpoint);
+            String endpoint = String.format("https://api.weatherapi.com/v1/current.json?key=%s&q=%s", API_KEY, clientIp);
+            logger.debug("*** Calling Weather API web service: {}", endpoint);
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -52,7 +50,7 @@ public class WeatherServiceImpl implements WeatherService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != STATUS_OK) {
-                logger.error("Failure on GET " + endpoint + " : Status Code: " + response.statusCode() + " : Body: " + response.body());
+                logger.error("Failure on GET {} : Status Code: {} : Body: {}", endpoint, response.statusCode(), response.body());
                 ObjectMapper om = new ObjectMapper();
                 WeatherError weatherError = om.readValue(response.body(), WeatherError.class);
                 String serviceErrorMessage = weatherError.getError().getMessage();
@@ -99,7 +97,7 @@ public class WeatherServiceImpl implements WeatherService {
                     .uri(URI.create("https://api.ipify.org"))
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
+            if (response.statusCode() == STATUS_OK) {
                 return response.body().trim();
             }
         } catch (Exception e) {
