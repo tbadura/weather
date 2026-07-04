@@ -36,14 +36,9 @@ public class WeatherController {
     public String home(Locale locale, Model model, HttpServletRequest request) {
         logger.info("Entering HomeController class. The client locale is {}.", locale);
 
-        // Extract the client's actual public IP
-        String clientIp = request.getHeader("X-Forwarded-For");
-        if (clientIp == null || clientIp.isEmpty()) {
-            clientIp = request.getRemoteAddr();
-        } else {
-            // X-Forwarded-For can be a comma-separated list; the first one is the client
-            clientIp = clientIp.split(",")[0].trim();
-        }
+        // Tomcat's RemoteIpValve automatically extracts the true, validated client IP.
+        // It updates the request object so getRemoteAddr() returns the safe IP directly.
+        String clientIp = request.getRemoteAddr();
 
         // Pass the clientIp string to the weather service
         Weather weather = weatherService.getWeather(clientIp);
