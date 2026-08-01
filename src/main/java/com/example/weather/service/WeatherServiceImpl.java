@@ -3,9 +3,10 @@ package com.example.weather.service;
 import com.example.weather.model.Weather;
 import com.example.weather.model.WeatherError;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.cedarsoftware.io.JsonIo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -19,8 +20,10 @@ import java.io.IOException;
 public class WeatherServiceImpl implements WeatherService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String API_KEY = ""; // key not provided, get one at weatherapi.com
     private static final int STATUS_OK = 200;
+
+    @Value("${weather.api.key}")
+    private String apiKey;
 
     /**
      * Get the weather current conditions
@@ -38,8 +41,8 @@ public class WeatherServiceImpl implements WeatherService {
                 clientIp = fetchPublicIp();
             }
 
-            String endpoint = String.format("https://api.weatherapi.com/v1/current.json?key=%s&q=%s", API_KEY, clientIp);
-            logger.debug("*** Calling Weather API web service: {}", endpoint);
+            String endpoint = String.format("https://api.weatherapi.com/v1/current.json?key=%s&q=%s", apiKey, clientIp);
+            logger.debug("*** Calling Weather API web service from IP address {}", clientIp);
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -57,7 +60,7 @@ public class WeatherServiceImpl implements WeatherService {
                 throw new RuntimeException("Error returned by weather service: " + serviceErrorMessage);
             }
 
-            String jsonText = JsonWriter.formatJson(response.body());
+            String jsonText = JsonIo.formatJson(response.body());
             logger.debug(jsonText);
 
             ObjectMapper om = new ObjectMapper();
