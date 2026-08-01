@@ -32,7 +32,7 @@ public class WeatherController {
     /**
      * Simply selects the home view to render by returning its name.
      */
-    @RequestMapping("/weather")
+    @RequestMapping({"/", "/weather"})
     public String home(Locale locale, Model model, HttpServletRequest request) {
         logger.info("Entering HomeController class. The client locale is {}.", locale);
 

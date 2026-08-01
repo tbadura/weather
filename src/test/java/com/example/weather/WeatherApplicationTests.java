@@ -4,12 +4,18 @@ import com.example.weather.controller.WeatherController;
 import com.example.weather.model.Weather;
 import com.example.weather.service.WeatherService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+/**
+ * The real key comes from WEATHER_API_KEY when it is exported; otherwise a dummy
+ * value keeps the context loadable so the build does not require a live key.
+ * Tests that actually call the weather service are skipped without a real key.
+ */
+@SpringBootTest(properties = "weather.api.key=${WEATHER_API_KEY:dummy-key-for-context-load}")
 class WeatherApplicationTests {
 
     @Autowired
@@ -24,6 +30,7 @@ class WeatherApplicationTests {
     }
 
     @Test
+    @EnabledIfEnvironmentVariable(named = "WEATHER_API_KEY", matches = ".+")
     void serviceTestWithAutoIp() {
         // Verifies the "auto:ip" fallback logic functions correctly
         String clientIp = "auto:ip";
@@ -34,6 +41,7 @@ class WeatherApplicationTests {
     }
 
     @Test
+    @EnabledIfEnvironmentVariable(named = "WEATHER_API_KEY", matches = ".+")
     void serviceTestWithStaticIp() {
         // Verifies that processing an explicit global IP works cleanly.
         // Uses a known public IP address (Google DNS in California).

@@ -53,7 +53,7 @@ public class WeatherServiceImpl implements WeatherService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != STATUS_OK) {
-                logger.error("Failure on GET {} : Status Code: {} : Body: {}", endpoint, response.statusCode(), response.body());
+                logger.error("Failure on GET {} : Status Code: {} : Body: {}", endpoint.replace(apiKey, "***"), response.statusCode(), response.body());
                 ObjectMapper om = new ObjectMapper();
                 WeatherError weatherError = om.readValue(response.body(), WeatherError.class);
                 String serviceErrorMessage = weatherError.getError().getMessage();

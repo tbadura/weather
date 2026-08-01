@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Applies only when this war is deployed to an external servlet container.
+    Spring Boot's server.tomcat.remoteip.* properties configure the *embedded*
+    connector, so they are ignored there - this valve is the equivalent for a
+    standalone Tomcat. internalProxies is intentionally left at its default
+    (loopback plus the RFC 1918 ranges), matching the embedded configuration.
+-->
+<Context>
+    <Valve className="org.apache.catalina.valves.RemoteIpValve"
+           remoteIpHeader="X-Forwarded-For"
+           protocolHeader="X-Forwarded-Proto"/>
+</Context>
